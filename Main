@@ -1,0 +1,86 @@
+DROP DATABASE JoinUp;
+CREATE DATABASE JoinUp;
+USE JoinUp;	
+CREATE TABLE User (		# 사용자 테이블
+
+    NAME		VARCHAR(20) NOT NULL,			# 유저 이름(실명)
+    BIRTH		VARCHAR(8) NOT NULL,			# 유저 생년월일 8자
+    PHONE CHAR(11) CHECK (PHONE REGEXP '^010[0-9]{8}$'),	# 유저 전화번호 11자, "010"으로 시작하고 뒤에 숫자 8개가 와야 저장됨
+    USERNAME 	VARCHAR(20) NOT NULL,			# 유저 닉네임
+    ID			VARCHAR(20) NOT NULL UNIQUE,	# 로그인 시 사용하는 ID, UNIQUE : 중복방지
+    PASSWORD	VARCHAR(255) NOT NULL,			# 로그인 시 사용하는 비밀번호
+    USER_ID 	INT AUTO_INCREMENT PRIMARY KEY	# 유저의 고유 식별자
+);
+
+CREATE TABLE Post (		# 게시글 테이블
+	POST_ID INT AUTO_INCREMENT PRIMARY KEY,		# 게시글 고유 식별자
+    USER_ID INT,								# 글 작성자의 USER_ID, User 테이블 참조
+	TITLE	VARCHAR(100) NOT NULL,				# 게시글 제목
+    CONTENT	TEXT NOT NULL,						# 게시글 내용 
+     VIEWS   INT DEFAULT 0,                     # 게시글 조회수, 기본값 0
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,		# 게시글 작성 시간
+    FOREIGN KEY (USER_ID) REFERENCES User(USER_ID)		# USER_ID 참조 코드
+);
+
+CREATE TABLE Contest (	# 공모전 메인 페이지 테이블
+    CONTEST_ID INT AUTO_INCREMENT PRIMARY KEY,      # 공모전 고유 식별자
+    TITLE VARCHAR(100) NOT NULL,                    # 공모전 제목
+    D_DAY DATE NOT NULL,                            # 공모전 마감일 (D-DAY 계산 가능)
+    VIEWS INT DEFAULT 0,                            # 공모전 조회수, 기본값 0
+    CATEGORY ENUM('마케팅', 'IT', '디자인', '기타') NOT NULL, # 카테고리 분류
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP   # 공모전 등록 시간
+);
+
+-- CREATE TABLE Choose_Contest (	# 공모전 선택 페이지
+
+
+-- );
+
+CREATE TABLE Contest_Team (		# 팀원 모집글 테이블
+    TEAM_ID INT AUTO_INCREMENT PRIMARY KEY,		# 모집글 고유 식별자
+    TITLE VARCHAR(30) NOT NULL CHECK (CHAR_LENGTH(TITLE) <= 30),	# 모집글 제목, 최대 30자
+    CONTENT TEXT NOT NULL,                      # 모집글 본문
+    GOOGLE_FORM_LINK VARCHAR(2083),             # 구글폼 링크 (최대 URL 길이 2083자로 설정)
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP # 모집글 등록 시간
+);
+
+
+CREATE TABLE Comment (	# 댓글 테이블
+	COMMENT_ID INT AUTO_INCREMENT PRIMARY KEY,		# 댓글 고유 식별자
+    POST_ID INT,					# 해당 댓글이 달린 게시글의 POST_ID, Post 테이블 참조
+    USER_ID INT,					# 댓글 작성자의 USER_ID, User 테이블 참조
+	CONTENT	VARCHAR(100) NOT NULL CHECK (CHAR_LENGTH(CONTENT) <= 100),	# 댓글 내용, 100자 초과 시 입력 차단
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,	# 댓글 작성 시간
+    FOREIGN KEY (POST_ID) REFERENCES Post(POST_ID), # POST_ID 참조 코드
+    FOREIGN KEY (USER_ID) REFERENCES User(USER_ID)	# USER_ID 참조 코드
+);
+
+CREATE TABLE Make_Challenge (	# 챌린지 생성 페이지
+    CHALLENGE_ID INT AUTO_INCREMENT PRIMARY KEY,       # 챌린지 고유 식별자
+    TITLE VARCHAR(20) NOT NULL CHECK (CHAR_LENGTH(TITLE) >= 1), # 제목: 최대 20자, 공백 불가, 최소 1자 이상
+    DESCRIPTION TEXT NOT NULL CHECK (CHAR_LENGTH(DESCRIPTION) <= 300), #설명: 최대 300자
+    START_DATE DATE NOT NULL,        # 챌린지 시작 날짜
+    END_DATE DATE NOT NULL, 		 # 종료 날짜
+    DAILY_COUNT TINYINT NOT NULL CHECK (DAILY_COUNT BETWEEN 1 AND 30), #1일 인증 횟수: 1회 ~ 30회
+    TOTAL_DAYS TINYINT NOT NULL CHECK (TOTAL_DAYS BETWEEN 1 AND 30),# 챌린지 기간: 1일 ~ 30일
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP     # 챌린지 생성 시간
+);
+
+CREATE TABLE Challenge_certification (
+	CHALLENGE_POST_ID INT AUTO_INCREMENT PRIMARY KEY,       # 글 번호 (고유 식별자)
+    TITLE VARCHAR(20) NOT NULL CHECK (CHAR_LENGTH(TITLE) >= 1),	#제목: 최대 20자, 공백 불가
+    CONTENT TEXT NOT NULL CHECK (CHAR_LENGTH(CONTENT) <= 300 AND CHAR_LENGTH(CONTENT) > 0),  #본문: 최대 300자, 공백 불가
+    CHALLENGE_TYPE VARCHAR(50) NOT NULL,          # 챌린지 종류 (예: 운동, 독서 등)
+    IMAGE_URL VARCHAR(2083),                      # 사진 첨부 (URL 형식)
+    USER_ID INT NOT NULL,                         # 작성자의 USER_ID (User 테이블 참조)
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP, # 작성 날짜
+    LIKES INT DEFAULT 0,                            # 추천(좋아요) 수 (기본값 0)
+    FOREIGN KEY (USER_ID) REFERENCES User(USER_ID)  # User 테이블 참조
+
+);
+
+CREATE TABLE Notice (	# 공지사항 테이블
+    NOTICE_ID INT AUTO_INCREMENT PRIMARY KEY,   # 공지사항 고유 번호
+    TITLE VARCHAR(100) NOT NULL,               	# 공지사항 제목
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP # 작성 날짜
+);
