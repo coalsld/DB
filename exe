@@ -1,0 +1,25 @@
+SELECT *
+FROM User;
+
+SELECT *
+FROM Post;
+
+SELECT *
+FROM Comment;
+
+# MyPosts 테이블
+-- 올린 글들을 조회
+SELECT *
+FROM Post WHERE USER_ID = 1;
+
+# 조회수 증가
+UPDATE Post SET VIEWS = VIEWS + 1 WHERE POST_ID = 1;
+
+# D-DAY 계산
+SELECT TITLE, D_DAY, DATEDIFF(D_DAY, CURDATE()) AS D_DAY_LEFT FROM Contest;
+
+# 글 번호 붙이기
+SELECT 
+	ROW_NUMBER() OVER (ORDER BY TEAM_ID DESC) AS '글번호',
+    TITLE AS '글제목'
+FROM Contest_Team;
